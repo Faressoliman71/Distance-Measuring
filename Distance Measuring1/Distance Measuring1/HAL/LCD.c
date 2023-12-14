@@ -1,21 +1,23 @@
-﻿#include "DIO_interface.h"
+﻿#include "LCD_cfg.h"
 #include "LCD_interface.h"
-#include "LCD_cfg.h"
+#include "DIO_interface.h"
 #include "Utils.h"
 #include "StdTypes.h"
 
-#if LCD_MOOD==_8_BIT
 
-void LCD_write_instruction(u8 instruction)
+#if LCD_MOOD == _8_BIT
+void LCD_write_instruction( u8 instruction)
 {
-	DIO_wright_pin(RS,LOW);
-	DIO_wright_port_reg_as_one_byte(LCD_PORT,instruction);
+	DIO_wright_pin(RS, LOW);
+	DIO_wright_port_reg_as_one_byte(LCD_PORT , instruction);
 	DIO_wright_pin(ENABLE,HIGH);
 	_delay_ms(1);
 	DIO_wright_pin(ENABLE,LOW);
 	_delay_ms(1);
+	
 }
-void LCD_write_data (u8 data)
+
+void LCD_write_data ( u8 data )
 {
 	DIO_wright_pin(RS,HIGH);
 	DIO_wright_port_reg_as_one_byte(LCD_PORT,data);
@@ -23,19 +25,22 @@ void LCD_write_data (u8 data)
 	_delay_ms(1);
 	DIO_wright_pin(ENABLE,LOW);
 	_delay_ms(1);
+	
 }
 
-void LCD_in_it(void)
+void LCD_init(void)
 {
 	_delay_ms(50);
 	LCD_write_instruction(0x38); //screen on 8 bit
+	_delay_ms(1);
 	LCD_write_instruction(0x0c); //cursor off (0x0e>>no blink,0x0f>>blink)
+	_delay_ms(1);
 	LCD_write_instruction(0x01); //clear screen
 	_delay_ms(1);
-	LCD_write_instruction(0x06); //increase address DDRAM
+	LCD_write_instruction(0x06);
+	
 }
-
-#elif LCD_MOOD==_4_BIT
+#elif LCD_MOOD ==_4_BIT
 
 void LCD_write_instruction(u8 instruction)
 {
@@ -86,7 +91,7 @@ void LCD_write_data(u8 instruction)
 	_delay_ms(1);
 	
 }
-void LCD_in_it(void)
+void LCD_init(void)
 {
 	_delay_ms(50);
 	LCD_write_instruction(0x02);
@@ -118,7 +123,6 @@ void LCD_clear(void)
 	LCD_write_instruction(0x01);
 	_delay_ms(1);
 }
-
 void LCD_clear_cell(u8 line,u8 cell,u8 num_of_cell)
 {
 	LCD_set_cursor(line,cell);
@@ -127,7 +131,7 @@ void LCD_clear_cell(u8 line,u8 cell,u8 num_of_cell)
 		LCD_write_char(' ');
 	}
 }
-/*********************/
+/****************/
 int string_length(char*str)
 {
 	int i;
@@ -175,15 +179,13 @@ void integer_to_string(int num,c8*str)
 	str[i]=0;
 	string_reverse_each_char(str);
 }
-
 void LCD_write_number(s32 num)  //very important
 {
-	u8 string[16]; 
-    integer_to_string(num,string);
+	u8 string[16];
+	integer_to_string(num,string);
 	LCD_write_string(string);
 }
 /******************************************/
-
 void LCD_write_binary(u8 num)
 {
 	s8 i;
@@ -200,6 +202,17 @@ void LCD_write_binary(u8 num)
 	}
 }
 
+void LCD_set_cursor(u8 line,u8 cell)
+{
+	if(line==0)
+	{
+		LCD_write_instruction(0x80|cell);
+	}
+	else if(line==1)
+	{
+		LCD_write_instruction(0x80|0x40|cell);
+	}
+}
 void LCD_write_hex2(u8 decimalnum)
 {
 	LCD_write_char('0');
@@ -223,147 +236,142 @@ void LCD_write_hex2(u8 decimalnum)
 	}
 	for (i=j-1; i>=0;i--)
 	{
-		 LCD_write_char(hexadecimalnum[i]);
+		LCD_write_char(hexadecimalnum[i]);
 	}
 }
-void LCD_write_hex(u16 num)
+void LCD_write_hex(u8 num)
 {
 	LCD_write_char('0');
-	LCD_write_char('x');
-	u16 reminder;
-	u8 str[20];
-	s8 j=0,i=0;
-	while(num!=0)
+	LCD_write_char('X');
+
+	u8 Hnibble =num>>4;
+	u8 Lnibble = num &0x0f ;
+	if (Hnibble <= 9)
 	{
-		reminder=num%16;
-		if(reminder<10)
-		{
-			str[j]=reminder+'0';
-			j++;
-		}
-		else
-		{
-			str[j]=reminder+55;
-			j++;
-		}
+		LCD_write_char(Hnibble);
 		
-		num=num/16;
 	}
-	for (i=j-1; i>=0;i--)
+	else
 	{
-		LCD_write_char(str[i]);
+		LCD_write_char(Hnibble-10+'A');
 	}
+	if (Lnibble <= 9)
+	{
+		LCD_write_char(Lnibble);
+		
+	}
+	else
+	{
+		LCD_write_char(Lnibble-10+'A');
+	}
+	
 
 }
-
-
-void LCD_set_cursor(u8 line,u8 cell) 
-{
-	if(line==0)
-	{
-		LCD_write_instruction(0x80|cell);
-	}
-	else if(line==1)
-	{
-		LCD_write_instruction(0x80|0x40|cell);
-	}
-}
-
 void LCD_set_cursor_write_string(u8 line,u8 cell,u8 *str)
 {
 	LCD_set_cursor(line,cell);
 	LCD_write_string(str);
 }
+void LCD_moving_word(u8*str,u8 str_length)
+{
+	static u8 line=0;
+	static u8 cell=0;
+	u8 i=0;
+	LCD_set_cursor(line,cell);
+	LCD_write_string(str);
+	_delay_ms(300);
+	LCD_clear();
+	if(cell==16)
+	{
+		if(line==0)
+		{
+			line=1;
+		}
+		else
+		{
+			line=0;
+		}
+		for(i=0;str[i];i++)
+		{
+			LCD_set_cursor(line,1);
+			LCD_write_string(&str[str_length-i]);
+			_delay_ms(300);
+			LCD_clear();
+		}
+		cell=0;
+	}
+	cell++;
+}
 
+void LCD_moving_word2(u8*str,u8 str_length)
+{
+	static u8 line=0;
+	static u8 cell=1;
+	u8 i=0,l=0;
+	
+	LCD_set_cursor(line,cell);
+	LCD_write_string(str);
+	_delay_ms(500);
+	LCD_clear();
+	if(cell==16-str_length+1)
+	{
+		if(line==0)
+		{
+			l=1;
+		}
+		else
+		{
+			l=0;
+		}
+		for(i=1;str[i];i++)
+		{
+			cell++;
+			LCD_set_cursor(line,cell);
+			LCD_write_string(str);
+			LCD_set_cursor(l,0);
+			LCD_write_string(&str[str_length-i]);
+			_delay_ms(500);
+			LCD_clear();
+		}
+	}
+	if(cell==16)
+	{
+		if(line==0)
+		{
+			line=1;
+		}
+		else
+		{
+			line=0;
+		}
+		
+		cell=0;
+	}
+	cell++;
+}
 
- 
- void LCD_moving_word(u8*str,u8 str_length)
- {
-	 static u8 line=0;
-	 static u8 cell=0;
-	 u8 i=0;
-	 LCD_set_cursor(line,cell);
-	 LCD_write_string(str);
-	 _delay_ms(300);
-	 LCD_clear();
-	 if(cell==16)
-	 {
-		 if(line==0)
-		 {
-			 line=1;
-		 }
-		 else
-		 {
-			 line=0;
-		 }
-		 for(i=0;str[i];i++)
-		 {
-			 LCD_set_cursor(line,1);
-			 LCD_write_string(&str[str_length-i]);
-			 _delay_ms(300);
-			 LCD_clear();
-		 }
-		 cell=0;
-	 }
-	 cell++;
- }
-
- void LCD_moving_word2(u8*str,u8 str_length)
- {
-	 static u8 line=0;
-	 static u8 cell=1;
-	 u8 i=0,l=0;
-	 
-	 LCD_set_cursor(line,cell);
-	 LCD_write_string(str);
-	 _delay_ms(500);
-	 LCD_clear();
-	 if(cell==16-str_length+1)
-	 {
-		 if(line==0)
-		 {
-			 l=1;
-		 }
-		 else
-		 {
-			 l=0;
-		 }
-		 for(i=1;str[i];i++)
-		 {
-			 cell++;
-			 LCD_set_cursor(line,cell);
-			 LCD_write_string(str);
-			 LCD_set_cursor(l,0);
-			 LCD_write_string(&str[str_length-i]);
-			 _delay_ms(500);
-			 LCD_clear();
-		 }
-	 }
-	 if(cell==16)
-	 {
-		 if(line==0)
-		 {
-			 line=1;
-		 }
-		 else
-		 {
-			 line=0;
-		 }
-		 
-		 cell=0;
-	 }
-	 cell++;
- }
-
- void CreateCustomCharacter (unsigned char *Pattern, const unsigned char Location) //pattern is arr of the shape
- {
-	 if(Location>7)
-	 {
-		 //do nothing
-	 }
-	 int i=0;
-	 LCD_write_instruction(0x40+(Location*8));     //Send the Address of CGRAM
-	 _delay_ms(1);
-	 for (i=0; i<8; i++)
-	 LCD_write_data(Pattern[ i ]);         //Pass the bytes of pattern on LCD
- }
+void CreateCustomCharacter (unsigned char *Pattern, const unsigned char Location) //pattern is arr of the shape
+{
+	if(Location>7)
+	{
+		//do nothing
+	}
+	int i=0;
+	LCD_write_instruction(0x40+(Location*8));     //Send the Address of CGRAM
+	_delay_ms(1);
+	for (i=0; i<8; i++)
+	LCD_write_data(Pattern[ i ]);         //Pass the bytes of pattern on LCD
+	LCD_write_instruction(0x80);
+}
+void LCD_GoTo ( u8 line , u8 cell)
+{
+	if ( line ==0)
+	{
+		LCD_write_instruction(0x80|cell);
+	}
+	if ( line ==1)
+	{
+		LCD_write_instruction(0x80|0x40|cell);
+	}
+	
+}

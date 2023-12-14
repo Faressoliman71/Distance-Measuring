@@ -1,13 +1,14 @@
-﻿#include "Utils.h"
+﻿
+#include "Utils.h"
 #include "StdTypes.h"
 #include "MemMap.h"
 #include "DIO_interface.h"
 #include "DIO_private.h"
 
-static void DIO_in_it_pin(DIO_PIN_TYPE pin_name,DIO_PIN_STATUS_TYPE status)
+static void DIO_init_pin(DIO_PIN_TYPE pin_name,DIO_PIN_STATUS_TYPE status)
 {
-	DIO_PORT_TYPE port=pin_name/8; //port will be number between 0 and 3
-	u8 pin=pin_name%8;            //pin will be number between 0 and 7
+	DIO_PORT_TYPE port = pin_name/8;
+	u8 pin = pin_name%8 ;
 	switch(status)
 	{
 		case OUTPUT:
@@ -55,50 +56,50 @@ static void DIO_in_it_pin(DIO_PIN_TYPE pin_name,DIO_PIN_STATUS_TYPE status)
 		break;
 		
 		case INPULL:
-	    switch(port)
-	   {
-		case PA:
-		CLR_BIT(DDRA,pin);
-		SET_BIT(PORTA,pin);
+		switch(port)
+		{
+			case PA:
+			CLR_BIT(DDRA,pin);
+			SET_BIT(PORTA,pin);
+			break;
+			case PB:
+			CLR_BIT(DDRB,pin);
+			SET_BIT(PORTB,pin);
+			break;
+			case PC:
+			CLR_BIT(DDRC,pin);
+			SET_BIT(PORTC,pin);
+			break;
+			case PD:
+			CLR_BIT(DDRD,pin);
+			SET_BIT(PORTD,pin);
+			break;
+		}
 		break;
-		case PB:
-		CLR_BIT(DDRB,pin);
-		SET_BIT(PORTB,pin);
-		break;
-		case PC:
-		CLR_BIT(DDRC,pin);
-		SET_BIT(PORTC,pin);
-		break;
-		case PD:
-		CLR_BIT(DDRD,pin);
-		SET_BIT(PORTD,pin);
-		break;
-	  }
-		  break;
 	}
+	
 }
-
 void DIO_wright_pin(DIO_PIN_TYPE pin_name,DIO_PIN_VOLTAGE_TYPE volt)
 {
-	DIO_PORT_TYPE port=pin_name/8; 
+	DIO_PORT_TYPE port=pin_name/8;
 	u8 pin=pin_name%8;
 	if(volt==HIGH)
 	{
-			switch(port)
-			{
-				case PA:
-				SET_BIT(PORTA,pin);
-				break;
-				case PB:
-				SET_BIT(PORTB,pin);
-				break;
-				case PC:
-				SET_BIT(PORTC,pin);
-				break;
-				case PD:
-				SET_BIT(PORTD,pin);
-				break;
-			}
+		switch(port)
+		{
+			case PA:
+			SET_BIT(PORTA,pin);
+			break;
+			case PB:
+			SET_BIT(PORTB,pin);
+			break;
+			case PC:
+			SET_BIT(PORTC,pin);
+			break;
+			case PD:
+			SET_BIT(PORTD,pin);
+			break;
+		}
 	}
 	else if(volt==LOW)
 	{
@@ -119,11 +120,6 @@ void DIO_wright_pin(DIO_PIN_TYPE pin_name,DIO_PIN_VOLTAGE_TYPE volt)
 		}
 	}
 }
-
-
-
-
-
 DIO_PIN_VOLTAGE_TYPE DIO_read_pin(DIO_PIN_TYPE pin_name)
 {
 	DIO_PORT_TYPE port=pin_name/8;
@@ -146,26 +142,6 @@ DIO_PIN_VOLTAGE_TYPE DIO_read_pin(DIO_PIN_TYPE pin_name)
 	}
 	return pin_vol;
 }
-/*void DIO_toggle_pin(DIO_PIN_TYPE pin_name)  
-{
-	DIO_PORT_TYPE port=pin_name/8;
-	DIO_PIN_TYPE pin=pin_name%8;
-	switch(port)
-	{
-		case PA:
-		TOG_BIT(PORTA,pin);
-		break;
-		case PB:
-		TOG_BIT(PORTB,pin);
-		break;
-		case PC:
-		TOG_BIT(PORTC,pin);
-		break;
-		case PD:
-		TOG_BIT(PORTD,pin);
-		break;
-	}
-}*/
 void DIO_toggle_pin(DIO_PIN_TYPE pin)
 {
 	switch(pin)
@@ -271,9 +247,6 @@ void DIO_toggle_pin(DIO_PIN_TYPE pin)
 		break;
 	}
 }
-
-
-
 void DIO_wright_port_reg_as_one_byte(DIO_PORT_TYPE port,u8 value)
 {
 	switch(port)
@@ -292,7 +265,6 @@ void DIO_wright_port_reg_as_one_byte(DIO_PORT_TYPE port,u8 value)
 		break;
 	}
 }
-
 u8 DIO_read_port_reg_as_one_byte(DIO_PORT_TYPE port)
 {
 	u8 value=0;
@@ -308,18 +280,16 @@ u8 DIO_read_port_reg_as_one_byte(DIO_PORT_TYPE port)
 		value=PORTC;
 		break;
 		case PD:
-	    value=PORTD;
+		value=PORTD;
 		break;
 	}
 	return value;
 }
-
-
-void DIO_in_it_all_pins(void)
+void DIO_init_all_pins(void)
 {
 	DIO_PIN_TYPE i;
 	for(i=PINA0;i<TOTAL_PINS;i++)
 	{
-		DIO_in_it_pin(i,pins_status_array[i]);
+		DIO_init_pin(i,pins_status_array[i]);
 	}
 }

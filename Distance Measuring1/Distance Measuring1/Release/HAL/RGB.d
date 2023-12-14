@@ -6,7 +6,7 @@ HAL/RGB.d HAL/RGB.o: ../HAL/RGB.c ../HAL/RGB.h ../HAL/LCD_interface.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\stdint.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
- ../MCAL/TIMERS.h ../MemMap.h ../Utils.h
+ ../MCAL/Timers.h ../MemMap.h ../Utils.h
 
 ../HAL/RGB.h:
 
@@ -28,7 +28,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h:
 
-../MCAL/TIMERS.h:
+../MCAL/Timers.h:
 
 ../MemMap.h:
 

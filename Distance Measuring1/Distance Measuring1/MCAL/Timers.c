@@ -165,6 +165,7 @@ void Timer1_Init( Timer1Mode_type mode,Timer1Scaler_type scaler,OC1A_Mode_type o
 
 void Timer1_InputCaptureEdge(ICU_Edge_type edge)
 {
+	
 	if(edge==RISING)
 	SET_BIT(TCCR1B,ICES1);
 	

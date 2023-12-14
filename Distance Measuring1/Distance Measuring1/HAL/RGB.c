@@ -1,6 +1,6 @@
 ﻿#include "RGB.h"
 #include "LCD_interface.h"
-#include "TIMERS.h"
+#include "Timers.h"
 #include "LCD_interface.h"
 
 static u8 color_array[][3]={

@@ -156,4 +156,10 @@ void Timer1_OCB_SetCallBack(void(*LocalFptr)(void));
 void Timer1_ICU_SetCallBack(void(*LocalFptr)(void));
 
 void Timer2_OVF_SetCallBack(void(*LocalFptr)(void));
+
+
+
+
+
+
 #endif /* TIMERS_H_ */
